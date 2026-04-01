@@ -1,0 +1,27 @@
+version: "1.0"
+name: "AI Tech Support Orchestrator"
+description: "A real-world task simulation of a Technical Support Engineer resolving customer tickets using a knowledge base and a terminal."
+author: "Antigravity Agent"
+tags: ["tech-support", "automation", "reasoning", "multi-step"]
+
+observation_space:
+  type: "dict"
+  description: "Contains text output and current environment state like available actions."
+
+action_space:
+  type: "dict"
+  description: "Union of read_ticket, search_kb, run_diagnostic, send_reply."
+
+tasks:
+  - id: "task_1"
+    name: "Password Reset Request"
+    difficulty: "easy"
+    description: "The agent must find the correct KB article for password reset and reply to the customer with instructions."
+  - id: "task_2"
+    name: "API 500 Error"
+    difficulty: "medium"
+    description: "The agent must use the terminal to diagnose a 500 error, find the DB issue, fix it, and resolve the ticket."
+  - id: "task_3"
+    name: "Customer Data Migration"
+    difficulty: "hard"
+    description: "The agent must perform a multi-step migration, verifying server health and disk space before execution."
