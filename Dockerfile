@@ -18,4 +18,4 @@ ENV HOST=0.0.0.0
 ENV PORT=7860
 
 # Command to run the FastAPI server
-CMD ["python", "server.py"]
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
