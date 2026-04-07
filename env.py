@@ -154,16 +154,3 @@ class SupportEnv:
         )
         
         return observation, reward, done, {}
-
-
-        else:
-            obs_text = f"Unknown action: {action_type}"
-            reward -= 0.1
-
-        observation = Observation(
-            text=obs_text,
-            data=obs_data,
-            available_actions=["list_tickets", "read_ticket", "search_kb", "run_diagnostic", "send_reply"]
-        )
-        
-        return observation, reward, done, {}
