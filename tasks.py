@@ -37,7 +37,7 @@ class EasyGrader(TaskGrader):
         if state.step_count > 6:
             points = max(0.1, points - 0.1)
 
-        return round(min(1.0, points), 2)
+        return round(max(0.01, min(0.99, points)), 2)
 
 class MediumGrader(TaskGrader):
     """
@@ -59,7 +59,7 @@ class MediumGrader(TaskGrader):
         elif ticket and ticket['status'] == 'resolved':
             points += 0.1 # Resolve without fixing? Minimal credit.
             
-        return round(min(1.0, points), 2)
+        return round(max(0.01, min(0.99, points)), 2)
 
 class HardGrader(TaskGrader):
     """
@@ -79,7 +79,7 @@ class HardGrader(TaskGrader):
         if ticket and ticket['status'] == 'resolved' and "run_migration" in str(state.terminal_history):
             points += 0.3
             
-        return round(min(1.0, points), 2)
+        return round(max(0.01, min(0.99, points)), 2)
 
 class ExtremeGrader(TaskGrader):
     """
@@ -115,7 +115,7 @@ class ExtremeGrader(TaskGrader):
         if ticket and ticket['status'] == 'resolved' and points > 0.5:
             points += 0.2
             
-        return round(min(1.0, points), 2)
+        return round(max(0.01, min(0.99, points)), 2)
 
 def get_grader(task_id: str) -> TaskGrader:
     mapping = {
