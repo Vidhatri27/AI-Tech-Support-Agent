@@ -1,3 +1,6 @@
+from typing import List, Dict, Any, Optional
+from models import EnvironmentState
+
 class TaskGrader:
     def __init__(self, task_id: str):
         self.task_id = task_id
