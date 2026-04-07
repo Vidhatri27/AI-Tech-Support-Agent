@@ -1,9 +1,6 @@
 # 🛠️ AI Tech Support Orchestrator (OpenEnv)
 
-> [!IMPORTANT]
-> This is a high-fidelity agentic environment designed for the **Meta PyTorch Hackathon**. It evaluates multi-step reasoning, tool-use consistency, and deterministic problem-solving in a technical support domain.
 
----
 
 ## 🌟 Overview
 
