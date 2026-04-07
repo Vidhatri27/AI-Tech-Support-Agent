@@ -25,3 +25,17 @@ tasks:
     name: "Customer Data Migration"
     difficulty: "hard"
     description: "The agent must perform a multi-step migration, verifying server health and disk space before execution."
+  - id: "task_4"
+    name: "Cluster Failover"
+    difficulty: "extreme"
+    description: "Diagnose an amber-state cluster node, flush cache, and perform a clean failover without data loss."
+
+baseline_scores:
+  task_1: 1.0
+  task_2: 1.0
+  task_3: 1.0
+  task_4: 1.0
+
+environment:
+  python: "3.10"
+  os: "linux"
