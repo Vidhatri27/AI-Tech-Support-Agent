@@ -89,14 +89,17 @@ SYSTEM_PROMPT = textwrap.dedent("""
 
 def solve_task(task_id: str, client: OpenAI) -> float:
     print(f"\n[OpenEnv] Initializing Environment: {task_id}")
+    print(f"[START] task={task_id}", flush=True)
     env = SupportEnv(task_id=task_id)
     history: List[str] = []
+    actual_steps = 0
 
     try:
         obs = env.reset()
         print(f"Episode Goal: Resolve {task_id} issues successfully.")
 
         for step in range(1, MAX_STEPS + 1):
+            actual_steps = step
             user_prompt = build_user_prompt(step, obs, history)
             
             # Using the exact multimodal-compatible message format from the sample
@@ -135,6 +138,7 @@ def solve_task(task_id: str, client: OpenAI) -> float:
             history.append(history_line)
             
             print(f"  Reward: {reward:+.2f} | Done: {done}")
+            print(f"[STEP] step={step} reward={reward}", flush=True)
 
             if done:
                 print("Episode complete.")
@@ -148,6 +152,7 @@ def solve_task(task_id: str, client: OpenAI) -> float:
 
     score = get_grader(task_id).grade(env.state())
     print(f"[Result] Final Score for {task_id}: {score:.2f}")
+    print(f"[END] task={task_id} score={score} steps={actual_steps}", flush=True)
     return score
 
 def main():
@@ -174,3 +179,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+        
+   
+            
