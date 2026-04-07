@@ -1,7 +1,3 @@
-from typing import List, Dict, Any, Optional
-from env import SupportEnv
-from models import Action, EnvironmentState
-
 class TaskGrader:
     def __init__(self, task_id: str):
         self.task_id = task_id
@@ -12,88 +8,119 @@ class TaskGrader:
 class EasyGrader(TaskGrader):
     """
     Grader for Ticket-001 (Password Reset).
-    Requirements:
-    1. Read TKT-001.
-    2. Search KB for 'password'.
-    3. Send message with correct instructions.
-    4. Close TKT-001 as 'resolved'.
+    Criteria:
+    - Read ticket (0.2)
+    - Search KB for auth/password (0.3)
+    - Resolve ticket (0.5)
     """
     def grade(self, state: EnvironmentState) -> float:
-        score = 0.0
-        
-        # Check if TKT-001 is resolved
+        points = 0.0
         ticket = next((t for t in state.tickets if t['id'] == 'TKT-001'), None)
-        if ticket and ticket['status'] == 'resolved':
-            score += 0.5
-            
-        # Check if they actually read it
-        if state.current_ticket_id == 'TKT-001' or any(h for h in state.terminal_history if 'TKT-001' in h):
-             score += 0.2
         
-        # Check step count (penalize excessive looping)
-        if state.step_count > 10:
-            score -= 0.1
+        # 1. Did they read the ticket?
+        if state.current_ticket_id == 'TKT-001' or any('TKT-001' in h for h in state.terminal_history):
+            points += 0.2
             
-        final_score = score + 0.3 if ticket and ticket['status'] == 'resolved' else score
-        return max(0.01, min(0.99, final_score))
+        # 2. Did they search the KB?
+        kb_keywords = ['password', 'auth', 'reset', 'forgot']
+        if any(any(kw in h.lower() for kw in kb_keywords) for h in state.terminal_history):
+             points += 0.3
+             
+        # 3. Final outcome
+        if ticket and ticket['status'] == 'resolved':
+            points += 0.5
+            
+        # Penalty for excessive steps (efficiency)
+        if state.step_count > 6:
+            points = max(0.1, points - 0.1)
+
+        return round(min(1.0, points), 2)
 
 class MediumGrader(TaskGrader):
     """
     Grader for Ticket-002 (API 500 Error).
-    Requirements:
-    1. Read TKT-002.
-    2. Run 'check_db'.
-    3. Run 'restart_db'.
-    4. Close TKT-002 as 'resolved'.
+    Criteria:
+    - Check DB (0.2)
+    - Restart DB (0.4)
+    - Resolve (0.4)
     """
     def grade(self, state: EnvironmentState) -> float:
-        score = 0.0
+        points = 0.0
         ticket = next((t for t in state.tickets if t['id'] == 'TKT-002'), None)
         
-        # Requirement checks
-        has_checked_db = "check_db" in state.terminal_history
-        has_restarted_db = "restart_db" in state.terminal_history
+        if "check_db" in state.terminal_history: points += 0.2
+        if "restart_db" in state.terminal_history: points += 0.4
         
-        if has_checked_db: score += 0.2
-        if has_restarted_db: score += 0.4
-        if ticket and ticket['status'] == 'resolved':
-            if has_restarted_db:
-                 score += 0.4
-            else:
-                 score += 0.1 # Resolved without fixing? Low score.
-                 
-        return max(0.01, min(0.99, score))
+        if ticket and ticket['status'] == 'resolved' and "restart_db" in state.terminal_history:
+            points += 0.4
+        elif ticket and ticket['status'] == 'resolved':
+            points += 0.1 # Resolve without fixing? Minimal credit.
+            
+        return round(min(1.0, points), 2)
 
 class HardGrader(TaskGrader):
     """
     Grader for Ticket-003 (Migration).
-    Requirements:
-    1. Verify disk space on new-server.
-    2. Run migration.
-    3. Resolve ticket.
+    Criteria:
+    - Check disk on new-server (0.3)
+    - Run migration command (0.4)
+    - Resolve (0.3)
     """
     def grade(self, state: EnvironmentState) -> float:
-        score = 0.0
+        points = 0.0
         ticket = next((t for t in state.tickets if t['id'] == 'TKT-003'), None)
         
-        has_checked_disk = "check_disk new-server" in state.terminal_history
-        has_run_migration = "run_migration --src old --dst new" in state.terminal_history
+        if "check_disk new-server" in state.terminal_history: points += 0.3
+        if "run_migration --src old --dst new" in state.terminal_history: points += 0.4
         
-        if has_checked_disk: score += 0.3
-        if has_run_migration: score += 0.4
-        if ticket and ticket['status'] == 'resolved' and has_run_migration:
-            score += 0.3
+        if ticket and ticket['status'] == 'resolved' and "run_migration" in str(state.terminal_history):
+            points += 0.3
             
-        return max(0.01, min(0.99, score))
+        return round(min(1.0, points), 2)
+
+class ExtremeGrader(TaskGrader):
+    """
+    Grader for Ticket-004 (Cluster Failover).
+    Requires exact sequence:
+    1. Check cluster health (0.2)
+    2. Flush cache for US-EAST-01 (0.3)
+    3. Initiate failover for US-EAST-01 (0.3)
+    4. Resolve (0.2)
+    """
+    def grade(self, state: EnvironmentState) -> float:
+        points = 0.0
+        ticket = next((t for t in state.tickets if t['id'] == 'TKT-004'), None)
+        history = state.terminal_history
+        
+        if "check_cluster_health" in history: points += 0.2
+        
+        # Check for flush cache BEFORE failover (Premium logic)
+        try:
+            flush_idx = history.index("flush_cache --node US-EAST-01")
+            points += 0.3
+            
+            if "initiate_failover --node US-EAST-01" in history:
+                fail_idx = history.index("initiate_failover --node US-EAST-01")
+                if fail_idx > flush_idx:
+                    points += 0.3
+                else:
+                    points += 0.1 # Out of order
+        except ValueError:
+            if "initiate_failover --node US-EAST-01" in history:
+                points += 0.1 # Failover without flush
+        
+        if ticket and ticket['status'] == 'resolved' and points > 0.5:
+            points += 0.2
+            
+        return round(min(1.0, points), 2)
 
 def get_grader(task_id: str) -> TaskGrader:
-    if task_id == "task_1":
-        return EasyGrader(task_id)
-    elif task_id == "task_2":
-        return MediumGrader(task_id)
-    elif task_id == "task_3":
-        return HardGrader(task_id)
-    else:
-        return TaskGrader(task_id)
+    mapping = {
+        "task_1": EasyGrader,
+        "task_2": MediumGrader,
+        "task_3": HardGrader,
+        "task_4": ExtremeGrader
+    }
+    grader_cls = mapping.get(task_id, TaskGrader)
+    return grader_cls(task_id)
 
-        
