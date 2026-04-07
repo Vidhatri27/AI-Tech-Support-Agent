@@ -34,7 +34,8 @@ class EasyGrader(TaskGrader):
         if state.step_count > 10:
             score -= 0.1
             
-        return max(0.0, min(1.0, score + 0.3)) if ticket and ticket['status'] == 'resolved' else score
+        final_score = score + 0.3 if ticket and ticket['status'] == 'resolved' else score
+        return max(0.01, min(0.99, final_score))
 
 class MediumGrader(TaskGrader):
     """
@@ -61,7 +62,7 @@ class MediumGrader(TaskGrader):
             else:
                  score += 0.1 # Resolved without fixing? Low score.
                  
-        return max(0.0, min(1.0, score))
+        return max(0.01, min(0.99, score))
 
 class HardGrader(TaskGrader):
     """
@@ -83,7 +84,7 @@ class HardGrader(TaskGrader):
         if ticket and ticket['status'] == 'resolved' and has_run_migration:
             score += 0.3
             
-        return max(0.0, min(1.0, score))
+        return max(0.01, min(0.99, score))
 
 def get_grader(task_id: str) -> TaskGrader:
     if task_id == "task_1":
@@ -94,3 +95,5 @@ def get_grader(task_id: str) -> TaskGrader:
         return HardGrader(task_id)
     else:
         return TaskGrader(task_id)
+
+        
