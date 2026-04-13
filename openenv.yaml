@@ -29,12 +29,17 @@ tasks:
     name: "Cluster Failover"
     difficulty: "extreme"
     description: "Diagnose an amber-state cluster node, flush cache, and perform a clean failover without data loss."
+  - id: "task_5"
+    name: "Network Outage (Legendary)"
+    difficulty: "mythic"
+    description: "A complete service blackout in EU-WEST. The agent must diagnose a misconfigured 'STRICT_ISO' network rule and apply a 'LOAD_BALANCE' fix to restore traffic."
 
 baseline_scores:
   task_1: 1.0
   task_2: 1.0
   task_3: 1.0
   task_4: 1.0
+  task_5: 1.0
 
 environment:
   python: "3.10"
