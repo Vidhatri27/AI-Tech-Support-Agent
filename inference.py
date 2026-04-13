@@ -20,10 +20,10 @@ MAX_TOKENS = 600
 FALLBACK_ACTION = {"action_type": "list_tickets", "parameters": {}}
 
 def build_history_lines(history: List[str]) -> str:
-    """Provides a rolling window of the last 5 major actions."""
+    """Provides a rolling window of the last 8 major actions."""
     if not history:
         return "None"
-    return "\n".join(history[-5:])
+    return "\n".join(history[-8:])
 
 def parse_action_response(response_text: str) -> Dict[str, Any]:
     """Robust parser with regex fallbacks for mixed-format model outputs."""
@@ -166,7 +166,7 @@ def main():
     print("OPENENV AI TECH SUPPORT EVALUATION ENGINE", flush=True)
     print("="*60, flush=True)
 
-    for tid in ["task_1", "task_2", "task_3", "task_4"]:
+    for tid in ["task_1", "task_2", "task_3", "task_4", "task_5"]:
         scores[tid] = solve_task(tid, client)
         
     print("\n" + "="*60, flush=True)
@@ -175,10 +175,6 @@ def main():
     for tid, s in scores.items():
         print(f" {tid:<10} | Score: {s:.2f}")
     print("="*60, flush=True)
-
-if __name__ == "__main__":
-    main()
-
 
 if __name__ == "__main__":
     main()
