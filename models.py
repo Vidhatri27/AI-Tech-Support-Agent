@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Literal
+from typing import List, Optional, Union, Literal, Dict, Any
 from pydantic import BaseModel, Field
 
 class ReadTicket(BaseModel):
@@ -16,17 +16,23 @@ class SendReply(BaseModel):
 
 class Action(BaseModel):
     action_type: Literal["read_ticket", "search_kb", "run_diagnostic", "send_reply", "list_tickets"]
-    parameters: Union[ReadTicket, SearchKB, RunDiagnostic, SendReply, dict]
+    parameters: dict = Field(..., description="Action parameters (e.g. {'ticket_id': 'TKT-001'} or {'command': 'check_db'})")
 
 class Observation(BaseModel):
     text: str = Field(..., description="Primary text output from the action")
     data: dict = Field(default_factory=dict, description="Structured data returned by the action")
     available_actions: List[str] = Field(default_factory=list)
 
-class Reward(BaseModel):
-    value: float = Field(..., description="Reward value (usually 0.0 to 1.0 logic, but can be incremental)")
-    done: bool = Field(..., description="Whether the episode is finished")
-    info: dict = Field(default_factory=dict, description="Extra metadata about the step")
+class SystemState(BaseModel):
+    """Detailed internal state of the simulated systems."""
+    db_status: str = "HEALTHY"
+    services: Dict[str, str] = Field(default_factory=lambda: {"api-gateway": "UP", "auth-service": "UP"})
+    disk_usage: Dict[str, float] = Field(default_factory=lambda: {"prod-server": 45.0, "new-server": 45.0})
+    nodes: List[Dict[str, str]] = Field(default_factory=lambda: [
+        {"id": "US-EAST-01", "status": "OK", "cache": "DIRTY"},
+        {"id": "US-EAST-02", "status": "OK", "cache": "CLEAN"}
+    ])
+    network_config: Dict[str, Any] = Field(default_factory=lambda: {"rules": "ALLOW_ALL", "latency": "LOW"})
 
 class EnvironmentState(BaseModel):
     tickets: List[dict]
@@ -34,3 +40,4 @@ class EnvironmentState(BaseModel):
     terminal_history: List[str]
     current_ticket_id: Optional[str] = None
     step_count: int = 0
+    system: SystemState = Field(default_factory=SystemState)
